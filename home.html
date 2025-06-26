@@ -1,0 +1,926 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <title>Loopsta - Feed</title>
+  <link rel="icon" href="loopsta.PNG.png" type="image/png">
+  
+  </head>
+
+  <style>
+    body {
+      margin: 0;
+      background: #111;
+      font-family: Arial, sans-serif;
+      color: #eee;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .topbar {
+      background: #000;
+      color: #00ffff;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 15px 20px;
+      border-bottom: 2px solid #00ffff;
+      position: sticky;
+      top: 0;
+      z-index: 10;
+    }
+
+    .topbar h2 {
+      margin: 0;
+    }
+
+    .topbar .nav {
+      display: flex;
+      gap: 15px;
+    }
+
+    .topbar .nav button {
+      background: transparent;
+      border: none;
+      color: #00ffff;
+      font-weight: bold;
+      cursor: pointer;
+      font-size: 16px;
+    }
+
+    .container {
+      max-width: 700px;
+      margin: 20px auto;
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+
+    .post-creator {
+      background: #222;
+      padding: 15px;
+      border-radius: 12px;
+      box-shadow: 0 0 10px #00cccc33;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .post-creator textarea {
+      width: 100%;
+      min-height: 80px;
+      border-radius: 10px;
+      border: none;
+      padding: 10px;
+      font-size: 16px;
+      resize: vertical;
+      background: #333;
+      color: #eee;
+      font-family: Arial, sans-serif;
+    }
+
+    .post-creator input[type="file"] {
+      color: #eee;
+      font-size: 14px;
+    }
+
+    .post-creator button {
+      background: #00ffff;
+      color: #000;
+      border: none;
+      padding: 10px 20px;
+      border-radius: 12px;
+      font-weight: bold;
+      cursor: pointer;
+      align-self: flex-end;
+      font-size: 16px;
+      transition: background-color 0.3s ease;
+    }
+
+    .post-creator button:hover {
+      background-color: #00bbbb;
+    }
+
+    .posts-list {
+      display: flex;
+      flex-direction: column;
+      gap: 15px;
+    }
+
+    .post {
+      background: #222;
+      border-radius: 12px;
+      padding: 15px;
+      box-shadow: 0 0 8px #00cccc88;
+      position: relative;
+    }
+
+    .post-author {
+      font-weight: bold;
+      color: #00ffff;
+      margin-bottom: 8px;
+    }
+
+    .post-text {
+      white-space: pre-wrap;
+      font-size: 16px;
+      margin-bottom: 10px;
+      color: #ddd;
+    }
+
+    .post-media img,
+    .post-media video {
+      max-width: 100%;
+      border-radius: 10px;
+      margin-top: 5px;
+    }
+
+    /* Comments section */
+    .comments-section {
+      margin-top: 15px;
+      border-top: 1px solid #00ffff;
+      padding-top: 10px;
+    }
+
+    .comment {
+      background: #333;
+      padding: 8px 12px;
+      border-radius: 8px;
+      margin-bottom: 8px;
+      font-size: 14px;
+      color: #ccc;
+      word-break: break-word;
+    }
+
+    .comment-author {
+      font-weight: bold;
+      color: #00ffff;
+      margin-right: 6px;
+    }
+
+    .comment-input {
+      display: flex;
+      gap: 10px;
+      margin-top: 10px;
+      position: relative;
+    }
+
+    .comment-input input[type="text"] {
+      flex: 1;
+      padding: 8px 10px;
+      border-radius: 10px;
+      border: none;
+      font-size: 14px;
+      background: #333;
+      color: #eee;
+      font-family: Arial, sans-serif;
+    }
+
+    .comment-input button {
+      padding: 8px 15px;
+      border-radius: 10px;
+      border: none;
+      background: #00ffff;
+      color: #000;
+      font-weight: bold;
+      cursor: pointer;
+      transition: background-color 0.3s ease;
+      user-select: none;
+    }
+
+    .comment-input button:hover {
+      background-color: #00bbbb;
+    }
+
+    /* Emoji picker */
+    .emoji-picker-container {
+      box-shadow: 0 0 15px #00ffff88;
+      position: absolute;
+      background: #222;
+      border: 1px solid #00ffff;
+      border-radius: 10px;
+      padding: 10px;
+      width: 260px;
+      z-index: 1000;
+      bottom: 40px;
+      left: 0;
+    }
+
+    .emoji-tabs {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 8px;
+    }
+
+    .emoji-tab-btn {
+      background: #333;
+      color: #00ffff;
+      border: none;
+      padding: 5px;
+      border-radius: 5px;
+      cursor: pointer;
+      font-size: 18px;
+      user-select: none;
+    }
+
+    .emoji-tab-btn:hover,
+    .emoji-tab-btn:focus {
+      background-color: #00bbbb;
+      outline: none;
+    }
+
+    .emoji-grid {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      max-height: 120px;
+      overflow-y: auto;
+    }
+
+    .emoji-grid span {
+      font-size: 22px;
+      cursor: pointer;
+      user-select: none;
+    }
+
+    /* Reactions */
+    .reactions {
+      margin-top: 10px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .reaction-btn {
+      cursor: pointer;
+      font-size: 20px;
+      padding: 4px 8px;
+      border-radius: 8px;
+      transition: background-color 0.2s ease;
+      user-select: none;
+    }
+
+    .reaction-btn:hover {
+      background-color: #00bbbb44;
+    }
+
+    .reaction-btn.selected {
+      background-color: #00ffffaa;
+    }
+
+    .reaction-summary {
+      font-size: 14px;
+      color: #00cccc;
+      margin-left: 10px;
+    }
+
+    .logo-brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.logo-brand img {
+  height: 30px;
+}
+
+/* Theme toggle */
+.theme-toggle {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  font-size: 24px;
+  background: #00ffff;
+  color: #000;
+  border: none;
+  padding: 10px;
+  border-radius: 50%;
+  cursor: pointer;
+  box-shadow: 0 0 10px #00ffff55;
+}
+.theme-toggle:hover {
+  transform: scale(1.1);
+}
+
+body.light-theme {
+  background: #f9f9f9;
+  color: #222;
+}
+
+body.light-theme .topbar {
+  background: #e0e0e0;
+  color: #007777;
+  border-bottom: 2px solid #007777;
+}
+
+body.light-theme .topbar .nav button {
+  color: #007777;
+}
+
+body.light-theme .post,
+body.light-theme .post-creator,
+body.light-theme .stories-bar,
+body.light-theme .trending-bar {
+  background: #ffffff;
+  color: #111;
+  box-shadow: 0 0 5px #ccc;
+}
+
+body.light-theme .post-creator textarea {
+  background: #f0f0f0;
+  color: #111;
+}
+
+body.light-theme .reaction-btn.selected {
+  background: #007777;
+  color: white;
+}
+
+body.light-theme .theme-toggle {
+  background: #007777;
+  color: white;
+}
+
+body.light-theme .topbar {
+  background: #f0f0f0;
+  color: #007777;
+}
+body.light-theme .post,
+body.light-theme .post-creator,
+body.light-theme .comment,
+body.light-theme .emoji-picker-container {
+  background: #f9f9f9;
+  color: #333;
+}
+body.light-theme .comment-input input[type="text"],
+body.light-theme .post-creator textarea {
+  background: #eee;
+  color: #111;
+}
+
+/* Stories bar */
+.stories-bar {
+  display: flex;
+  overflow-x: auto;
+  gap: 15px;
+  padding: 10px 20px;
+  background: #1a1a1a;
+}
+.story {
+  text-align: center;
+  cursor: pointer;
+  transition: transform 0.2s;
+}
+.story img {
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  border: 2px solid #00ffff;
+}
+.story span {
+  font-size: 12px;
+  color: #ccc;
+}
+.story:hover {
+  transform: scale(1.1);
+}
+
+/* Trending bar */
+.trending-bar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  padding: 10px 20px;
+}
+.trend {
+  background: #00ffff33;
+  border: none;
+  color: #eee;
+  padding: 8px 12px;
+  border-radius: 20px;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+.trend:hover {
+  background: #00cccc;
+}
+
+
+  </style>
+</head>
+
+<script>
+  const toggle = document.querySelector('.theme-toggle');
+
+  toggle.onclick = () => {
+    document.body.classList.toggle('light-theme');
+    
+    // Optional: Save preference
+    if (document.body.classList.contains('light-theme')) {
+      localStorage.setItem('loopsta_theme', 'light');
+    } else {
+      localStorage.setItem('loopsta_theme', 'dark');
+    }
+  };
+
+  // Load theme on startup
+  window.addEventListener('DOMContentLoaded', () => {
+    const savedTheme = localStorage.getItem('loopsta_theme');
+    if (savedTheme === 'light') {
+      document.body.classList.add('light-theme');
+    }
+  });
+</script>
+
+
+<body onload="loadPosts()">
+
+  <script>
+    const currentUser = localStorage.getItem('loopsta_loggedInUser') || sessionStorage.getItem('loopsta_loggedInUser');
+    if (!currentUser) {
+      alert("Please log in first.");
+      window.location.href = "index.html";
+    }
+  </script>
+
+  <div class="topbar">
+
+ 
+  <div class="logo-brand">
+    <img src="loopsta.PNG.png" alt="Loopsta Logo">
+    <h2>Loopsta</h2>
+  </div>
+  <div class="nav">
+
+      <button onclick="window.location.href='home.html'">🏠 Feed</button>
+      <button onclick="window.location.href='chat.html'">💬 Chat</button>
+      <button onclick="window.location.href='profile.html'">👤 Profile</button>
+      <button onclick="logout()">🚪 Logout</button>
+    </div>
+  </div>
+
+     <!-- Stories -->
+<div class="stories-bar">
+  <div class="story" title="You">
+    <img src="pic1.png" />
+    <span>You</span>
+  </div>
+  <div class="story" title="boipelo2">
+    <img src="pic2.webp" />
+    <span>boipelo2</span>
+  </div>
+  <div class="story" title="boipelo3">
+    <img src="pic3.jpg" />
+    <span>boipelo3</span>
+  </div>
+  <div class="story" title="Alice">
+    <img src="pic4.webp" />
+    <span>Alice</span>
+  </div>
+
+<div class="story" title="Bob">
+    <img src="pic5.webp" />
+    <span>Bob</span>
+  </div>
+
+  <div class="story" title="Bestie">
+    <img src="pic6.jfif" />
+    <span>Bestie</span>
+  </div>
+<div class="story" title="Charlie">
+    <img src="pic7.jfif"/>
+    <span>Charlie</span>
+  </div>
+  <div class="story" title="loopsta">
+    <img src="pic8.jpg" />
+    <span>loopsta</span>
+  </div>
+
+</div>
+
+<!-- Trending -->
+<div class="trending-bar">
+  <button class="trend" onclick="filterByHashtag('#FunTimes')">#FunTimes</button>
+  <button class="trend" onclick="filterByHashtag('#LoopstaLaunch')">#LoopstaLaunch</button>
+</div>
+
+<!-- Theme Button -->
+<button class="theme-toggle" title="Toggle Light/Dark">🌙</button>
+
+
+
+  <div class="container">
+    <div class="post-creator">
+      <textarea id="postText" placeholder="What's on your mind?"></textarea>
+      <input type="file" id="postMedia" accept="image/*,video/*" />
+      <button onclick="createPost()">Post</button>
+    </div>
+
+    <div class="posts-list" id="postsList"></div>
+  </div>
+
+  <script>
+    function logout() {
+      localStorage.removeItem('loopsta_loggedInUser');
+      sessionStorage.removeItem('loopsta_loggedInUser');
+      window.location.href = 'index.html';
+    }
+
+    // Post structure example:
+    // {
+    //   id: "unique_id", author: "username", text: "...", media: "...", timestamp: 123,
+    //   comments: [{ author:"user", text:"comment", timestamp: 123 }],
+    //   reactions: { "😊": ["user1","user2"], "❤️": ["user3"] }
+    // }
+
+    function createPost() {
+      const textInput = document.getElementById('postText');
+      const mediaInput = document.getElementById('postMedia');
+
+      const text = textInput.value.trim();
+      const mediaFile = mediaInput.files[0];
+
+      if (!text && !mediaFile) {
+        alert('Please write something or select an image/video.');
+        return;
+      }
+
+      const id = 'post_' + Date.now();
+
+      if (mediaFile) {
+        const reader = new FileReader();
+        reader.onload = () => {
+          savePost({
+            id,
+            author: currentUser,
+            text,
+            media: reader.result,
+            timestamp: Date.now(),
+            comments: [],
+            reactions: {}
+          });
+          textInput.value = '';
+          mediaInput.value = '';
+          loadPosts();
+        };
+        reader.readAsDataURL(mediaFile);
+      } else {
+        savePost({
+          id,
+          author: currentUser,
+          text,
+          media: null,
+          timestamp: Date.now(),
+          comments: [],
+          reactions: {}
+        });
+        textInput.value = '';
+        mediaInput.value = '';
+        loadPosts();
+      }
+    }
+
+    function savePost(post) {
+      const posts = JSON.parse(localStorage.getItem('loopsta_posts')) || [];
+      posts.unshift(post); // newest on top
+      localStorage.setItem('loopsta_posts', JSON.stringify(posts));
+    }
+
+    function loadPosts() {
+      const postsList = document.getElementById('postsList');
+      postsList.innerHTML = '';
+
+      const posts = JSON.parse(localStorage.getItem('loopsta_posts')) || [];
+
+      if (posts.length === 0) {
+        postsList.innerHTML = '<p style="text-align:center;color:#777;">No posts yet.</p>';
+        return;
+      }
+
+      posts.forEach(post => {
+        const postDiv = document.createElement('div');
+        postDiv.className = 'post';
+
+        // Author
+        const authorDiv = document.createElement('div');
+        authorDiv.className = 'post-author';
+        authorDiv.textContent = post.author;
+        postDiv.appendChild(authorDiv);
+
+        // Text
+        if (post.text) {
+          const textDiv = document.createElement('div');
+          textDiv.className = 'post-text';
+          textDiv.textContent = post.text;
+          postDiv.appendChild(textDiv);
+        }
+
+        // Media
+        if (post.media) {
+          const mediaDiv = document.createElement('div');
+          mediaDiv.className = 'post-media';
+
+          if (post.media.startsWith('data:image')) {
+            const img = document.createElement('img');
+            img.src = post.media;
+            img.alt = 'Post image';
+            mediaDiv.appendChild(img);
+          } else if (post.media.startsWith('data:video')) {
+            const video = document.createElement('video');
+            video.src = post.media;
+            video.controls = true;
+            mediaDiv.appendChild(video);
+          }
+
+          postDiv.appendChild(mediaDiv);
+        }
+
+        // Reactions area
+        const reactionsDiv = document.createElement('div');
+        reactionsDiv.className = 'reactions';
+        postDiv.appendChild(reactionsDiv);
+
+        // Reaction emojis offered
+        const reactionEmojis = ['👍', '❤️', '😂', '😮', '😢', '😡'];
+
+        // Create reaction buttons
+        reactionEmojis.forEach(emoji => {
+          const btn = document.createElement('span');
+          btn.className = 'reaction-btn';
+          btn.textContent = emoji;
+
+          // Check if currentUser reacted with this emoji
+          if (post.reactions[emoji] && post.reactions[emoji].includes(currentUser)) {
+            btn.classList.add('selected');
+          }
+
+          btn.onclick = () => {
+            toggleReaction(post.id, emoji);
+          };
+
+          reactionsDiv.appendChild(btn);
+        });
+
+        // Reaction summary text
+        const summarySpan = document.createElement('span');
+        summarySpan.className = 'reaction-summary';
+        summarySpan.textContent = getReactionSummary(post.reactions);
+        reactionsDiv.appendChild(summarySpan);
+
+        // Comments section
+        const commentsSection = document.createElement('div');
+        commentsSection.className = 'comments-section';
+
+        // Existing comments
+        post.comments.forEach(comment => {
+          const commentDiv = document.createElement('div');
+          commentDiv.className = 'comment';
+
+          const authorSpan = document.createElement('span');
+          authorSpan.className = 'comment-author';
+          authorSpan.textContent = comment.author + ':';
+
+          const textSpan = document.createElement('span');
+          textSpan.textContent = ' ' + comment.text;
+
+          commentDiv.appendChild(authorSpan);
+          commentDiv.appendChild(textSpan);
+          commentsSection.appendChild(commentDiv);
+        });
+
+        // Add comment input & emoji picker button & submit button
+        const commentInputDiv = document.createElement('div');
+        commentInputDiv.className = 'comment-input';
+
+        const commentInput = document.createElement('input');
+        commentInput.type = 'text';
+        commentInput.placeholder = 'Write a comment...';
+        commentInput.maxLength = 200;
+
+        // Emoji toggle button
+        const emojiToggleBtn = document.createElement('button');
+        emojiToggleBtn.type = 'button';
+        emojiToggleBtn.textContent = '😀';
+        emojiToggleBtn.style.fontSize = '20px';
+        emojiToggleBtn.title = 'Add emoji';
+
+        // Comment submit button
+        const commentBtn = document.createElement('button');
+        commentBtn.textContent = 'Comment';
+
+        commentBtn.onclick = () => {
+          const commentText = commentInput.value.trim();
+          if (!commentText) {
+            alert('Please enter a comment.');
+            return;
+          }
+          addComment(post.id, commentText);
+          commentInput.value = '';
+          // Close emoji picker if open
+          const existingPicker = commentInputDiv.querySelector('.emoji-picker-container');
+          if(existingPicker) existingPicker.remove();
+        };
+
+        // Emoji picker toggle logic
+        emojiToggleBtn.onclick = (e) => {
+          e.stopPropagation();
+          const existingPicker = commentInputDiv.querySelector('.emoji-picker-container');
+          if (existingPicker) {
+            existingPicker.remove();
+          } else {
+            createEmojiPicker(commentInput, commentInputDiv);
+          }
+        };
+
+        commentInputDiv.appendChild(commentInput);
+        commentInputDiv.appendChild(emojiToggleBtn);
+        commentInputDiv.appendChild(commentBtn);
+
+        commentsSection.appendChild(commentInputDiv);
+
+        postDiv.appendChild(commentsSection);
+
+        postsList.appendChild(postDiv);
+      });
+    }
+
+    // Helpers for reactions
+    function toggleReaction(postId, emoji) {
+      const posts = JSON.parse(localStorage.getItem('loopsta_posts')) || [];
+      const post = posts.find(p => p.id === postId);
+      if (!post) return;
+
+      post.reactions = post.reactions || {};
+
+      // Initialize array for emoji if none
+      if (!post.reactions[emoji]) post.reactions[emoji] = [];
+
+      const idx = post.reactions[emoji].indexOf(currentUser);
+      if (idx >= 0) {
+        // Remove reaction
+        post.reactions[emoji].splice(idx, 1);
+        if (post.reactions[emoji].length === 0) {
+          delete post.reactions[emoji];
+        }
+      } else {
+        // Add reaction
+        post.reactions[emoji].push(currentUser);
+      }
+
+      localStorage.setItem('loopsta_posts', JSON.stringify(posts));
+      loadPosts();
+    }
+
+    function getReactionSummary(reactions) {
+      if (!reactions) return '';
+      const counts = [];
+      for (const [emoji, users] of Object.entries(reactions)) {
+        counts.push(`${emoji} ${users.length}`);
+      }
+      return counts.join('  ');
+    }
+
+    // Helpers for comments
+    function addComment(postId, text) {
+      const posts = JSON.parse(localStorage.getItem('loopsta_posts')) || [];
+      const post = posts.find(p => p.id === postId);
+      if (!post) return;
+
+      post.comments = post.comments || [];
+      post.comments.push({
+        author: currentUser,
+        text,
+        timestamp: Date.now()
+      });
+
+      localStorage.setItem('loopsta_posts', JSON.stringify(posts));
+      loadPosts();
+    }
+
+    // Emoji picker implementation
+
+    const emojiCategories = {
+      '😀': ['😀','😃','😄','😁','😆','😅','😂','🤣','😊','😍','😘','😜','🤪'],
+      '🐶': ['🐶','🐱','🐭','🐰','🦊','🐻','🐼','🐨','🐯'],
+      '🍕': ['🍏','🍎','🍌','🍇','🍓','🍕','🍔','🍟','🌭','🍿'],
+      '⚽': ['⚽','🏀','🏈','⚾','🎾','🏐','🎱','🏓','🏸'],
+      '🌍': ['🚗','🚌','🚲','🛴','✈️','🚁','🚤','⛵'],
+      '💡': ['💡','🔦','💻','📱','📷','📺','🎧'],
+      '🔣': ['❤️','💔','💯','🔔','💤','❗','❓','✳️']
+    };
+
+    function createEmojiPicker(inputField, containerParent) {
+      // Remove any existing picker
+      document.querySelectorAll('.emoji-picker-container').forEach(el => el.remove());
+
+      const picker = document.createElement('div');
+      picker.className = 'emoji-picker-container';
+
+      // Tabs container
+      const tabs = document.createElement('div');
+      tabs.className = 'emoji-tabs';
+
+      // Grid container
+      const grid = document.createElement('div');
+      grid.className = 'emoji-grid';
+
+      picker.appendChild(tabs);
+      picker.appendChild(grid);
+
+      // Add tabs
+      Object.keys(emojiCategories).forEach(cat => {
+        const tabBtn = document.createElement('button');
+        tabBtn.className = 'emoji-tab-btn';
+        tabBtn.textContent = cat;
+
+        tabBtn.onclick = () => {
+          grid.innerHTML = '';
+          emojiCategories[cat].forEach(emoji => {
+            const span = document.createElement('span');
+            span.textContent = emoji;
+
+            span.onclick = () => {
+              insertAtCursor(inputField, emoji);
+              inputField.focus();
+            };
+
+            grid.appendChild(span);
+          });
+        };
+
+        tabs.appendChild(tabBtn);
+      });
+
+      containerParent.style.position = 'relative'; // ensure parent positioned
+      containerParent.appendChild(picker);
+
+      // Trigger first tab click to show emojis by default
+      tabs.firstChild.click();
+
+      // Close picker if clicking outside
+      function onClickOutside(e) {
+        if (!picker.contains(e.target) && e.target !== inputField && e.target !== containerParent.querySelector('button')) {
+          picker.remove();
+          document.removeEventListener('click', onClickOutside);
+        }
+      }
+      document.addEventListener('click', onClickOutside);
+    }
+
+    // Utility to insert emoji at caret position in input/textarea
+    function insertAtCursor(input, textToInsert) {
+      const start = input.selectionStart;
+      const end = input.selectionEnd;
+      const value = input.value;
+
+      input.value = value.substring(0, start) + textToInsert + value.substring(end);
+      input.selectionStart = input.selectionEnd = start + textToInsert.length;
+    }
+  </script>
+
+<script>
+  function filterByHashtag(tag) {
+    const posts = JSON.parse(localStorage.getItem('loopsta.posts')) || [];
+    const filtered = posts.filter(p => p.text && p.text.includes(tag));
+
+    const postsList = document.getElementById('postsList');
+    postsList.innerHTML = '';
+
+    if (filtered.length === 0) {
+      postsList.innerHTML = `<p style="text-align:center;color:#aaa;">No posts with ${tag}</p>`;
+      return;
+    }
+
+    filtered.forEach(post => {
+      // You can reuse your loadPosts loop logic here
+      // Or call loadPosts() with a filter
+    });
+
+    alert(`Filtered by: ${tag}`);
+  }
+function toggleTheme() {
+  const body = document.body;
+  const isLight = body.classList.toggle('light-theme');
+  localStorage.setItem('loopsta_theme', isLight ? 'light' : 'dark');
+
+  // Change emoji icon
+  document.querySelector('.theme-toggle').textContent = isLight ? '🌞' : '🌙';
+}
+window.addEventListener("DOMContentLoaded", () => {
+  const isLight = localStorage.getItem('loopsta_theme') === 'light';
+  if (isLight) {
+    document.body.classList.add('light-theme');
+    document.querySelector('.theme-toggle').textContent = '🌞';
+  } else {
+    document.querySelector('.theme-toggle').textContent = '🌙';
+  }
+});
+
+</script>
+
+
+</body>
+</html>

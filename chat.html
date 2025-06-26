@@ -1,0 +1,922 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <title>Loopsta - Chat</title>
+  <link rel="icon" href="loopsta.PNG.png" type="image/png">
+  
+  </head>
+
+  <style>
+    body {
+      margin: 0;
+      background: #111;
+      font-family: Arial, sans-serif;
+      color: #fff;
+      display: flex;
+      height: 100vh;
+      overflow: hidden;
+    }
+
+    .topbar {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 50px;
+      background: #000;
+      color: #00ffff;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 0 20px;
+      border-bottom: 2px solid #00ffff;
+      z-index: 10;
+    }
+
+    .topbar h2 {
+      margin: 0;
+      line-height: 50px;
+    }
+
+    .topbar .nav {
+      display: flex;
+      gap: 15px;
+    }
+
+    .topbar .nav button {
+      background: transparent;
+      border: none;
+      color: #00ffff;
+      font-weight: bold;
+      cursor: pointer;
+      font-size: 16px;
+    }
+
+    .sidebar {
+      width: 280px;
+      background: #1a1a1a;
+      padding-top: 60px; /* below topbar */
+      border-right: 2px solid #00ffff;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .sidebar h3 {
+      text-align: center;
+      margin: 10px 0 5px 0;
+      color: #00ffff;
+      user-select: none;
+    }
+
+    .contact-controls {
+      padding: 5px 15px 10px 15px;
+      border-bottom: 1px solid #333;
+    }
+
+    .contact-controls input[type="text"] {
+      width: calc(100% - 110px);
+      padding: 6px 8px;
+      border-radius: 6px;
+      border: none;
+      background: #222;
+      color: #fff;
+      font-size: 14px;
+      margin-right: 5px;
+    }
+
+    .contact-controls button {
+      background: #00ffff;
+      color: #000;
+      border: none;
+      padding: 7px 10px;
+      border-radius: 6px;
+      font-weight: bold;
+      cursor: pointer;
+      font-size: 14px;
+    }
+
+    #contactsSearch {
+      width: 100%;
+      padding: 8px 12px;
+      border: none;
+      border-bottom: 1px solid #333;
+      background: #222;
+      color: #fff;
+      font-size: 14px;
+      box-sizing: border-box;
+    }
+
+    #contactsList {
+      flex: 1;
+      overflow-y: auto;
+    }
+
+    .contact-item {
+      padding: 10px 15px;
+      border-bottom: 1px solid #333;
+      cursor: pointer;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      transition: background-color 0.2s ease;
+    }
+
+    .contact-item:hover {
+      background: #005555;
+    }
+
+    .contact-item.active {
+      background: #00bbbb;
+      color: #000;
+    }
+
+    .contact-main {
+      display: flex;
+      flex-direction: column;
+      flex: 1;
+    }
+
+    .contact-nickname {
+      width: 100%;
+      background: transparent;
+      border: none;
+      color: inherit;
+      font-size: 14px;
+      padding: 0;
+      margin-bottom: 3px;
+      cursor: text;
+    }
+
+    .contact-nickname:focus {
+      outline: none;
+      background: #333;
+      border-radius: 4px;
+      padding-left: 5px;
+    }
+
+    .contact-username {
+      font-size: 12px;
+      color: #aaa;
+      user-select: none;
+    }
+
+    .contact-status {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      margin-left: 10px;
+      flex-shrink: 0;
+    }
+
+    .status-online {
+      background: #00ff00;
+      box-shadow: 0 0 5px #00ff00;
+    }
+
+    .status-offline {
+      background: #555;
+    }
+
+    .favorite-star {
+      font-size: 16px;
+      margin-left: 8px;
+      cursor: pointer;
+      user-select: none;
+      color: #444;
+      transition: color 0.3s ease;
+    }
+
+    .favorite-star.fav {
+      color: gold;
+      text-shadow: 0 0 5px gold;
+    }
+
+    .chat-area {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      padding-top: 60px; /* below topbar */
+      padding-left: 20px;
+      padding-right: 20px;
+      background: #111;
+    }
+
+    .chat-box {
+      flex: 1;
+      overflow-y: auto;
+      background: #1c1c1c;
+      border-radius: 10px;
+      padding: 15px;
+      margin-bottom: 10px;
+      scroll-behavior: smooth;
+    }
+
+    .message {
+      margin-bottom: 15px;
+      background: #222;
+      padding: 10px;
+      border-radius: 8px;
+      max-width: 70%;
+      word-wrap: break-word;
+    }
+
+    .message.sent {
+      background: #005555;
+      margin-left: auto;
+      color: #cce;
+    }
+
+    .message span.sender {
+      font-weight: bold;
+      color: #00ffff;
+    }
+
+    .message img, .message video {
+      max-width: 100%;
+      margin-top: 5px;
+      border-radius: 6px;
+    }
+
+    .input-bar {
+      display: flex;
+      gap: 10px;
+    }
+
+    .input-bar input[type="text"] {
+      flex: 1;
+      padding: 10px;
+      border-radius: 10px;
+      border: none;
+      background: #333;
+      color: #fff;
+      font-size: 15px;
+    }
+
+    .input-bar input[type="file"] {
+      color: #fff;
+      font-size: 15px;
+    }
+
+    .input-bar button {
+      background: #00ffff;
+      color: #000;
+      border: none;
+      padding: 10px 20px;
+      border-radius: 10px;
+      font-weight: bold;
+      cursor: pointer;
+      font-size: 15px;
+    }
+
+    .emoji-bar {
+      text-align: center;
+      margin-top: 5px;
+    }
+
+    .emoji-bar button {
+      font-size: 20px;
+      margin: 0 5px;
+      background: transparent;
+      border: none;
+      cursor: pointer;
+      color: #00ffff;
+    }
+
+    /* Scrollbar styling */
+    .sidebar::-webkit-scrollbar,
+    .chat-box::-webkit-scrollbar {
+      width: 8px;
+    }
+
+    .sidebar::-webkit-scrollbar-thumb,
+    .chat-box::-webkit-scrollbar-thumb {
+      background-color: #00bbbb;
+      border-radius: 4px;
+    }
+
+    /* Emoji picker */
+    .emoji-picker-container {
+      box-shadow: 0 0 15px #00ffff88;
+      position: absolute;
+      background: #222;
+      border: 1px solid #00ffff;
+      border-radius: 10px;
+      padding: 10px;
+      width: 260px;
+      z-index: 1000;
+      bottom: 40px;
+      left: 0;
+    }
+
+    .emoji-tabs {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 8px;
+    }
+
+    .emoji-tab-btn {
+      background: #333;
+      color: #00ffff;
+      border: none;
+      padding: 5px;
+      border-radius: 5px;
+      cursor: pointer;
+      font-size: 18px;
+      user-select: none;
+    }
+
+    .emoji-tab-btn:hover,
+    .emoji-tab-btn:focus {
+      background-color: #00bbbb;
+      outline: none;
+    }
+
+    .emoji-grid {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      max-height: 120px;
+      overflow-y: auto;
+    }
+
+    .emoji-grid span {
+      font-size: 22px;
+      cursor: pointer;
+      user-select: none;
+    }
+    .logo-brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.logo-brand img {
+  height: 30px;
+}
+
+.delete-btn {
+      position: absolute;
+      top: 5px;
+      left: 5px;
+      background: crimson;
+      border: none;
+      color: white;
+      font-size: 10px;
+      border-radius: 4px;
+      padding: 2px 5px;
+      cursor: pointer;
+    }
+
+  </style>
+</head>
+<body>
+
+  <div class="topbar">
+  <div class="logo-brand">
+    <img src="loopsta.PNG.png" alt="Loopsta Logo">
+    <h2>Loopsta</h2>
+  </div>
+  <div class="nav">
+
+      <button onclick="window.location.href='home.html'">🏠 Feed</button>
+      <button onclick="window.location.href='chat.html'">💬 Chat</button>
+      <button onclick="window.location.href='profile.html'">👤 Profile</button>
+      <button onclick="logout()">🚪 Logout</button>
+    </div>
+  </div>
+
+  <div class="sidebar">
+    <h3>Contacts</h3>
+    <div class="contact-controls">
+      <input type="text" id="newContactInput" placeholder="Add contact username..." />
+      <button onclick="addContact()">Add</button>
+    </div>
+    <input type="text" id="contactsSearch" placeholder="Search contacts..." oninput="renderContacts()" />
+    <div id="contactsList"></div>
+  </div>
+
+  <div class="chat-area">
+    <div class="chat-box" id="chatBox"></div>
+
+    <div class="input-bar">
+      <input type="text" id="chatMessage" placeholder="Type your message..." />
+      <input type="file" id="chatMedia" accept="image/*,video/*" />
+      <button onclick="sendMessage()">Send</button>
+    </div>
+
+    <div class="emoji-bar">
+      <button onclick="addEmoji('😊')">😊</button>
+      <button onclick="addEmoji('😂')">😂</button>
+      <button onclick="addEmoji('🔥')">🔥</button>
+      <button onclick="addEmoji('❤️')">❤️</button>
+      <button onclick="addEmoji('👍')">👍</button>
+      <button onclick="addEmoji('😢')">😢</button>
+    </div>
+  </div>
+ <audio id="notificationSound" src="https://www.soundjay.com/buttons/sounds/button-09.mp3" preload="auto"></audio>
+<script>
+  const currentUser = localStorage.getItem('loopsta_loggedInUser') || sessionStorage.getItem('loopsta_loggedInUser');
+  if (!currentUser) {
+    alert("Please log in first.");
+    window.location.href = "index.html";
+  }
+
+  let selectedContact = null;
+
+  // Contact management storage keys
+  const contactsStorageKey = 'loopsta_contacts';
+  const favoritesStorageKey = 'loopsta_favorites';
+
+  // Simulate online status randomly for demo (true=online, false=offline)
+  const onlineStatus = {};
+
+  // Load contacts from localStorage
+  function getContacts() {
+    const allContacts = JSON.parse(localStorage.getItem(contactsStorageKey)) || {};
+    return allContacts[currentUser] || {};
+  }
+
+  // Save contacts to localStorage
+  function saveContacts(contacts) {
+    const allContacts = JSON.parse(localStorage.getItem(contactsStorageKey)) || {};
+    allContacts[currentUser] = contacts;
+    localStorage.setItem(contactsStorageKey, JSON.stringify(allContacts));
+  }
+
+  // Load favorites list from localStorage
+  function getFavorites() {
+    const allFavs = JSON.parse(localStorage.getItem(favoritesStorageKey)) || {};
+    return allFavs[currentUser] || {};
+  }
+
+  // Save favorites list
+  function saveFavorites(favs) {
+    const allFavs = JSON.parse(localStorage.getItem(favoritesStorageKey)) || {};
+    allFavs[currentUser] = favs;
+    localStorage.setItem(favoritesStorageKey, JSON.stringify(allFavs));
+  }
+
+  // Get chat storage key for two users sorted alphabetically
+  function getChatKey(user1, user2) {
+    return [user1, user2].sort().join('_');
+  }
+
+  // Get messages with a contact
+  function getMessages(contact) {
+    if (!contact) return [];
+    return JSON.parse(localStorage.getItem('loopsta_chat_' + getChatKey(currentUser, contact))) || [];
+  }
+
+  // Save messages with a contact
+  function saveMessages(contact, messages) {
+    localStorage.setItem('loopsta_chat_' + getChatKey(currentUser, contact), JSON.stringify(messages));
+  }
+
+  // Get display name (nickname) or username fallback
+  function getContactsNicknames() {
+    return getContacts();
+  }
+
+  // Get nickname for a username
+  function getNickname(username) {
+    const contacts = getContacts();
+    return contacts[username] || username;
+  }
+
+  // Render contacts list with search and favorites
+  function renderContacts() {
+    const contactsDiv = document.getElementById('contactsList');
+    contactsDiv.innerHTML = '';
+
+    let contacts = getContacts();
+    let favorites = getFavorites();
+
+    // Get search filter
+    const filter = document.getElementById('contactsSearch').value.toLowerCase();
+
+    // Add users from chats who might not be in contacts yet
+    const allChats = Object.keys(localStorage).filter(k => k.startsWith('loopsta_chat_'));
+    allChats.forEach(key => {
+      if (!key.includes(currentUser)) return;
+      const users = key.split('_');
+      const other = users.find(u => u !== currentUser);
+      if (other && !(other in contacts) && other !== currentUser) {
+        contacts[other] = other;
+      }
+    });
+
+    // Save back contacts (including new found)
+    saveContacts(contacts);
+
+    // Filter contacts by search
+    const filteredUsernames = Object.keys(contacts).filter(u => {
+      const nick = contacts[u].toLowerCase();
+      const uname = u.toLowerCase();
+      return nick.includes(filter) || uname.includes(filter);
+    });
+
+    // Sort favorites on top
+    filteredUsernames.sort((a, b) => {
+      const aFav = favorites[a] ? 0 : 1;
+      const bFav = favorites[b] ? 0 : 1;
+      if (aFav !== bFav) return aFav - bFav;
+      // Then alphabetically by nickname
+      return contacts[a].localeCompare(contacts[b]);
+    });
+
+    filteredUsernames.forEach(username => {
+      if (username === currentUser) return;
+
+      // Simulate online status if not set yet
+      if (onlineStatus[username] === undefined) {
+        onlineStatus[username] = Math.random() > 0.4; // 60% chance online
+      }
+
+      const contactDiv = document.createElement('div');
+      contactDiv.classList.add('contact-item');
+      if (selectedContact === username) contactDiv.classList.add('active');
+
+      contactDiv.onclick = () => {
+        selectedContact = username;
+        renderContacts();
+        renderChat();
+      };
+
+      // Contact main container (nickname input + username)
+      const mainDiv = document.createElement('div');
+      mainDiv.classList.add('contact-main');
+
+      // Nickname input editable
+      const nickInput = document.createElement('input');
+      nickInput.type = 'text';
+      nickInput.className = 'contact-nickname';
+      nickInput.value = contacts[username];
+      nickInput.title = `Edit nickname for ${username}`;
+      nickInput.onchange = e => {
+        contacts[username] = e.target.value.trim() || username;
+        saveContacts(contacts);
+        renderContacts();
+        renderChat();
+      };
+
+      mainDiv.appendChild(nickInput);
+
+      // Username label
+      const userLabel = document.createElement('div');
+      userLabel.className = 'contact-username';
+      userLabel.textContent = username;
+      mainDiv.appendChild(userLabel);
+
+      contactDiv.appendChild(mainDiv);
+
+      // Online status dot
+      const statusDot = document.createElement('div');
+      statusDot.className = 'contact-status ' + (onlineStatus[username] ? 'status-online' : 'status-offline');
+      contactDiv.appendChild(statusDot);
+
+      // Favorite star
+      const star = document.createElement('span');
+      star.className = 'favorite-star' + (favorites[username] ? ' fav' : '');
+      star.innerHTML = '⭐';
+      star.title = favorites[username] ? 'Unmark Favorite' : 'Mark Favorite';
+      star.onclick = e => {
+        e.stopPropagation();
+        if (favorites[username]) {
+          delete favorites[username];
+        } else {
+          favorites[username] = true;
+        }
+        saveFavorites(favorites);
+        renderContacts();
+      };
+
+      contactDiv.appendChild(star);
+
+      contactsDiv.appendChild(contactDiv);
+    });
+  }
+
+  // Add new contact manually
+  function addContact() {
+    const input = document.getElementById('newContactInput');
+    let val = input.value.trim();
+    if (!val) {
+      alert('Enter a username to add');
+      return;
+    }
+    if (val === currentUser) {
+      alert("You can't add yourself");
+      return;
+    }
+
+    const contacts = getContacts();
+    if (contacts[val]) {
+      alert('Contact already exists');
+      input.value = '';
+      return;
+    }
+
+    contacts[val] = val;
+    saveContacts(contacts);
+    input.value = '';
+    renderContacts();
+  }
+
+  // Render chat messages with selected contact
+  function renderChat() {
+    const chatBox = document.getElementById('chatBox');
+    chatBox.innerHTML = '';
+
+    if (!selectedContact) {
+      chatBox.innerHTML = '<p style="text-align:center;color:#777;margin-top:40px;">Select a contact to start chatting</p>';
+      return;
+    }
+
+    const messages = getMessages(selectedContact);
+
+    messages.forEach(msg => {
+      const msgDiv = document.createElement('div');
+      msgDiv.classList.add('message');
+      if (msg.sender === currentUser) msgDiv.classList.add('sent');
+
+      let senderName = msg.sender === currentUser ? 'You' : getNickname(msg.sender);
+
+      let contentHTML = `<span class="sender">${senderName}:</span> `;
+
+      if (msg.text) {
+        contentHTML += `<span>${escapeHTML(msg.text)}</span>`;
+      }
+
+      if (msg.media) {
+        if (msg.media.startsWith('data:image')) {
+          contentHTML += `<br><img src="${msg.media}" alt="image"/>`;
+        } else if (msg.media.startsWith('data:video')) {
+          contentHTML += `<br><video src="${msg.media}" controls></video>`;
+        }
+      }
+
+      msgDiv.innerHTML = contentHTML;
+      chatBox.appendChild(msgDiv);
+    });
+
+    chatBox.scrollTop = chatBox.scrollHeight;
+  }
+
+  // Send a new message
+  function sendMessage() {
+    if (!selectedContact) {
+      alert('Select a contact first');
+      return;
+    }
+
+    const input = document.getElementById('chatMessage');
+    const mediaInput = document.getElementById('chatMedia');
+
+    let text = input.value.trim();
+    let mediaFile = mediaInput.files[0];
+
+    if (!text && !mediaFile) {
+      alert('Enter a message or select media to send');
+      return;
+    }
+
+    if (mediaFile) {
+      const reader = new FileReader();
+      reader.onload = () => {
+        saveMessage(selectedContact, {
+          sender: currentUser,
+          text: text,
+          media: reader.result,
+          timestamp: Date.now()
+        });
+        input.value = '';
+        mediaInput.value = '';
+        renderChat();
+      };
+      reader.readAsDataURL(mediaFile);
+    } else {
+      saveMessage(selectedContact, {
+        sender: currentUser,
+        text: text,
+        media: null,
+        timestamp: Date.now()
+      });
+      input.value = '';
+      renderChat();
+    }
+  }
+
+  function saveMessage(contact, msg) {
+    const messages = getMessages(contact);
+    messages.push(msg);
+    saveMessages(contact, messages);
+
+    // For demo, simulate reply after 1-3 seconds (optional)
+    if (msg.sender === currentUser) {
+      setTimeout(() => {
+        const reply = {
+          sender: contact,
+          text: randomReply(),
+          media: null,
+          timestamp: Date.now()
+        };
+        const msgs = getMessages(contact);
+        msgs.push(reply);
+        saveMessages(contact, msgs);
+        if (selectedContact === contact) renderChat();
+      }, 1000 + Math.random() * 2000);
+    }
+  }
+
+  function escapeHTML(text) {
+    const div = document.createElement('div');
+    div.textContent = text;
+    return div.innerHTML;
+  }
+
+  function randomReply() {
+    const replies = [
+      "Got it!",
+      "Thanks for the message 😊",
+      "I'll get back to you soon.",
+      "That's cool!",
+      "😂😂",
+      "Sounds good!",
+      "👍"
+    ];
+    return replies[Math.floor(Math.random() * replies.length)];
+  }
+
+  // Logout function
+  function logout() {
+    localStorage.removeItem('loopsta_loggedInUser');
+    sessionStorage.removeItem('loopsta_loggedInUser');
+    window.location.href = 'index.html';
+  }
+
+  function deleteMessage(id) {
+      messages = messages.filter(msg => msg.id !== id);
+      saveMessages();
+      renderMessages();
+    }
+
+     function playSound() {
+      document.getElementById("notificationSound").play();
+    }
+
+    function renderMessages() {
+      const container = document.getElementById("chatContainer");
+      container.innerHTML = "";
+
+      messages.forEach(msg => {
+        const msgDiv = document.createElement("div");
+        msgDiv.className = "message" + (msg.sender === currentUser ? " self" : "");
+        msgDiv.innerHTML = `
+          <div>${msg.text}</div>
+          <div class="timestamp">${msg.time}</div>
+          <button class="delete-btn" onclick="deleteMessage(${msg.id})">Delete</button>
+        `;
+        container.appendChild(msgDiv);
+      });
+
+      container.scrollTop = container.scrollHeight;
+    }
+
+
+  // Initialize
+  function init() {
+    const contacts = getContacts();
+    // If no contacts, add demo contacts for better experience
+    if (Object.keys(contacts).length === 0) {
+      const demoContacts = {
+        "alice": "Alice",
+        "bob": "Bob",
+        "charlie": "Charlie"
+      };
+      saveContacts(demoContacts);
+    }
+
+    renderContacts();
+    selectedContact = Object.keys(getContacts())[0] || null;
+    renderChat();
+  }
+
+  window.onload = init;
+
+  // Add emoji to message input
+  function addEmoji(e) {
+    const input = document.getElementById('chatMessage');
+    input.value += e;
+    input.focus();
+  }
+
+// Emoji toggle button
+        const emojiToggleBtn = document.createElement('button');
+        emojiToggleBtn.type = 'button';
+        emojiToggleBtn.textContent = '😀';
+        emojiToggleBtn.style.fontSize = '20px';
+        emojiToggleBtn.title = 'Add emoji';
+
+         // Emoji picker toggle logic
+        emojiToggleBtn.onclick = (e) => {
+          e.stopPropagation();
+          const existingPicker = commentInputDiv.querySelector('.emoji-picker-container');
+          if (existingPicker) {
+            existingPicker.remove();
+          } else {
+            createEmojiPicker(commentInput, commentInputDiv);
+          }
+        };
+
+        commentInputDiv.appendChild(emojiToggleBtn);
+
+// Emoji picker implementation
+
+    const emojiCategories = {
+      '😀': ['😀','😃','😄','😁','😆','😅','😂','🤣','😊','😍','😘','😜','🤪'],
+      '🐶': ['🐶','🐱','🐭','🐰','🦊','🐻','🐼','🐨','🐯'],
+      '🍕': ['🍏','🍎','🍌','🍇','🍓','🍕','🍔','🍟','🌭','🍿'],
+      '⚽': ['⚽','🏀','🏈','⚾','🎾','🏐','🎱','🏓','🏸'],
+      '🌍': ['🚗','🚌','🚲','🛴','✈️','🚁','🚤','⛵'],
+      '💡': ['💡','🔦','💻','📱','📷','📺','🎧'],
+      '🔣': ['❤️','💔','💯','🔔','💤','❗','❓','✳️']
+    };
+
+    function createEmojiPicker(inputField, containerParent) {
+      // Remove any existing picker
+      document.querySelectorAll('.emoji-picker-container').forEach(el => el.remove());
+
+      const picker = document.createElement('div');
+      picker.className = 'emoji-picker-container';
+
+      // Tabs container
+      const tabs = document.createElement('div');
+      tabs.className = 'emoji-tabs';
+
+      // Grid container
+      const grid = document.createElement('div');
+      grid.className = 'emoji-grid';
+
+      picker.appendChild(tabs);
+      picker.appendChild(grid);
+
+      // Add tabs
+      Object.keys(emojiCategories).forEach(cat => {
+        const tabBtn = document.createElement('button');
+        tabBtn.className = 'emoji-tab-btn';
+        tabBtn.textContent = cat;
+
+        tabBtn.onclick = () => {
+          grid.innerHTML = '';
+          emojiCategories[cat].forEach(emoji => {
+            const span = document.createElement('span');
+            span.textContent = emoji;
+
+            span.onclick = () => {
+              insertAtCursor(inputField, emoji);
+              inputField.focus();
+            };
+
+            grid.appendChild(span);
+          });
+        };
+
+        tabs.appendChild(tabBtn);
+      });
+
+      containerParent.style.position = 'relative'; // ensure parent positioned
+      containerParent.appendChild(picker);
+
+      // Trigger first tab click to show emojis by default
+      tabs.firstChild.click();
+
+      // Close picker if clicking outside
+      function onClickOutside(e) {
+        if (!picker.contains(e.target) && e.target !== inputField && e.target !== containerParent.querySelector('button')) {
+          picker.remove();
+          document.removeEventListener('click', onClickOutside);
+        }
+      }
+      document.addEventListener('click', onClickOutside);
+    }
+
+    // Utility to insert emoji at caret position in input/textarea
+    function insertAtCursor(input, textToInsert) {
+      const start = input.selectionStart;
+      const end = input.selectionEnd;
+      const value = input.value;
+
+      input.value = value.substring(0, start) + textToInsert + value.substring(end);
+      input.selectionStart = input.selectionEnd = start + textToInsert.length;
+    }
+
+    // In profile or post:
+localStorage.setItem("currentChatUser", "john_doe");
+window.location.href = "chat.html";
+
+
+</script>
+</body>
+</html> 
